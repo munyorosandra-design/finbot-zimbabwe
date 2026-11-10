@@ -9,6 +9,7 @@ import os
 # AUDIT LOG FUNCTION
 
 def record_audit(action, details):
+    st.write("Audit function loaded successfully")
     log_file = "audit_log.csv"
 
     new_record = pd.DataFrame([{
@@ -276,7 +277,7 @@ elif menu == "Record Transactions":
                 conn.commit()
                 record_audit(
                     "Transaction Recorded",
-                     "A new transaction was successfully saved."
+                    "A new transaction was successfully saved."
                 )
 
                 st.success("Transaction recorded successfully!")
