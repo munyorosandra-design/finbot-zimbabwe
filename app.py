@@ -10,7 +10,7 @@ import os
 
 def record_audit(action, details):
 
-    log_file = "audit_log.csv"
+    log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audit_log.csv")
 
     new_record = pd.DataFrame([{
         "Date and Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
