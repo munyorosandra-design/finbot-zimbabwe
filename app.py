@@ -325,7 +325,7 @@ if not st.session_state.authenticated:
 
 
 # DASHBOARD
-st.image("Mbare_Musika.png", width=250)
+st.image("Mbare_Musika .png", width=250)
 st.title("💰 Finova")
 st.caption("Your SME Financial Management and Decision Support Assistant")
 
