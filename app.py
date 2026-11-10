@@ -261,7 +261,7 @@ if not st.session_state.authenticated:
                     st.error("That username is already registered.")
 
         with login_tab:
-        st.subheader("Login to FinBot")
+            st.subheader("Login to FinBot")
 
         login_username = st.text_input("Username", key="login_username")
         login_password = st.text_input("Password", type="password", key="login_password")
