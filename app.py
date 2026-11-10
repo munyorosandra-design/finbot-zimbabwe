@@ -3,6 +3,25 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 from datetime import date
+import hashlib
+from datetime import datetime
+import os
+# AUDIT LOG FUNCTION
+
+def record_audit(action, details):
+    log_file = "audit_log.csv"
+
+    new_record = pd.DataFrame([{
+        "Date and Time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "User": st.session_state.get("username", "Admin"),
+        "Action": action,
+        "Details": details
+    }])
+
+    if os.path.exists(log_file):
+        new_record.to_csv(log_file, mode="a", header=False, index=False)
+    else:
+        new_record.to_csv(log_file, index=False)
 
 # DATABASE CONNECTION
 conn = sqlite3.connect("finbot.db", check_same_thread=False)
@@ -97,19 +116,7 @@ cash_balance = cash_in - cash_out
 st.sidebar.title("💰 FinBot Zimbabwe")
 st.sidebar.write("SME Financial Management Assistant")
 
-menu = st.sidebar.radio(
-    "Navigation",
-    [
-        "Dashboard",
-        "Record Transactions",
-        "Sales & Expenses",
-        "Cash Flow",
-        "Customer Debts",
-        "Ask FinBot AI",
-        "Reports"
-    ]
-)
-
+menu = st.sidebar.radio("Navigation", ["Dashboard", "Record Transactions", "Sales & Expenses", "Cash Flow", "Customer Debts", "Ask FinBot AI", "Reports", "Audit Log"])
 
 # DASHBOARD
 st.title("💰 FinBot Zimbabwe")
@@ -714,7 +721,28 @@ elif menu == "Reports":
 
 st.sidebar.divider()
 st.sidebar.caption("FinBot Zimbabwe | Academic Prototype")
+# AUDIT LOG PAGE
 
+elif menu == "Audit Log":
+
+    st.header("System Audit Log")
+    st.caption("Record of activities performed in FinBot Zimbabwe")
+
+    if os.path.exists("audit_log.csv"):
+
+        audit_data = pd.read_csv("audit_log.csv")
+
+        st.dataframe(audit_data, use_container_width=True)
+
+        st.download_button(
+            label="Download Audit Log",
+            data=audit_data.to_csv(index=False),
+            file_name="FinBot_Audit_Log.csv",
+            mime="text/csv"
+        )
+
+    else:
+        st.info("No audit records available yet.")
 
 
 
