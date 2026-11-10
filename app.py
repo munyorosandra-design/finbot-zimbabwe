@@ -228,7 +228,48 @@ if menu == "Dashboard":
     else:
         st.info("Your business is currently breaking even.")
 
+elif menu == "Record Transactions":
 
+    st.header("Record Business Transactions")
+
+    with st.form("transaction_form"):
+
+        transaction_date = st.date_input(
+            "Transaction Date", date.today()
+        )
+
+        transaction_type = st.selectbox(
+            "Transaction Type",
+            ["Sale", "Expense", "Customer Payment", "Supplier Payment"]
+        )
+
+        description = st.text_input("Description")
+
+        amount = st.number_input(
+            "Amount (USD)",
+            min_value=0.01,
+            step=1.00
+        )
+
+        submitted = st.form_submit_button("Save Transaction")
+
+        if submitted:
+
+            if not description.strip():
+                st.error("Please enter a transaction description.")
+
+            else:
+                conn.execute(
+                    """INSERT INTO transactions
+                    (date, type, description, amount)
+                    VALUES (?, ?, ?, ?)""",
+                    (str(transaction_date), transaction_type, description, amount)
+                )
+
+                conn.commit()
+
+                st.success("Transaction recorded successfully!")
+                st.rerun()
 
 # SALES AND EXPENSES
 elif menu == "Sales & Expenses":
