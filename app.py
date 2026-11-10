@@ -722,13 +722,18 @@ elif menu == "Reports":
 st.sidebar.divider()
 st.sidebar.caption("FinBot Zimbabwe | Academic Prototype")
 # AUDIT LOG PAGE
-elif menu == "Audit Log":
+# FINBOT AUDIT LOG PAGE
+
+if menu == "Audit Log":
+
     st.header("System Audit Log")
-    st.caption("Record of activities performed in FinBot Zimbabwe")
+    st.write("Monitor activities performed on FinBot Zimbabwe.")
 
     if os.path.exists("audit_log.csv"):
 
         audit_data = pd.read_csv("audit_log.csv")
+
+        st.subheader("Activity History")
 
         st.dataframe(
             audit_data,
@@ -736,14 +741,12 @@ elif menu == "Audit Log":
         )
 
         st.download_button(
-            label="Download Audit Log",
-            data=audit_data.to_csv(index=False),
-            file_name="FinBot_Audit_Log.csv",
-            mime="text/csv"
+            "Download Audit Log",
+            audit_data.to_csv(index=False),
+            "FinBot_Audit_Log.csv",
+            "text/csv"
         )
 
     else:
+
         st.info("No audit records available yet.")
-
-
-
