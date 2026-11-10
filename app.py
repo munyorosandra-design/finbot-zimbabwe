@@ -6,6 +6,26 @@ from datetime import date
 import hashlib
 from datetime import datetime
 import os
+# USER AUTHENTICATION SETTINGS
+
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if "username" not in st.session_state:
+    st.session_state.username = None
+
+if "login_attempts" not in st.session_state:
+    st.session_state.login_attempts = 0
+    # USER DATABASE
+
+USERS_FILE = "users.csv"
+
+def load_users():
+    if os.path.exists(USERS_FILE):
+        return pd.read_csv(USERS_FILE)
+    return pd.DataFrame(
+        columns=["username", "password", "pin"]
+    )
 # AUDIT LOG FUNCTION
 
 def record_audit(action, details):
@@ -26,6 +46,11 @@ def record_audit(action, details):
 
 # DATABASE CONNECTION
 conn = sqlite3.connect("finbot.db", check_same_thread=False)
+# DATABASE BACKUP
+import shutil
+
+if os.path.exists("finbot.db"):
+    shutil.copy("finbot.db", "finbot_backup.db")
 
 conn.execute("""
 CREATE TABLE IF NOT EXISTS transactions (
