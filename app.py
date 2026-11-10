@@ -9,7 +9,7 @@ import os
 # AUDIT LOG FUNCTION
 
 def record_audit(action, details):
-st.write("Audit function loaded successfully")
+
     log_file = "audit_log.csv"
 
     new_record = pd.DataFrame([{
