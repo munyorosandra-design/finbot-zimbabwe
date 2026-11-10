@@ -260,7 +260,7 @@ if not st.session_state.authenticated:
                 except sqlite3.IntegrityError:
                     st.error("That username is already registered.")
 
-    with login_tab:
+        with login_tab:
         st.subheader("Login to FinBot")
 
         login_username = st.text_input("Username", key="login_username")
@@ -269,7 +269,7 @@ if not st.session_state.authenticated:
 
         if st.button("Login"):
             if st.session_state.login_attempts >= 5:
-                st.error("Too many attempts. Please restart the app and try again.")
+                st.error("Too many attempts. Please contact the administrator.")
             else:
                 user = conn.execute(
                     """SELECT username, password_hash, pin_hash
@@ -289,6 +289,34 @@ if not st.session_state.authenticated:
                 else:
                     st.session_state.login_attempts += 1
                     st.error("Incorrect username, password or PIN.")
+
+        st.divider()
+        st.subheader("Forgot Password?")
+
+        reset_username = st.text_input("Registered Username", key="reset_username")
+        reset_pin = st.text_input("Registered 6-digit PIN", type="password", key="reset_pin")
+        new_password = st.text_input("New Password", type="password", key="new_password")
+        confirm_password = st.text_input("Confirm New Password", type="password", key="confirm_password")
+
+        if st.button("Reset Password"):
+            reset_user = conn.execute(
+                "SELECT pin_hash FROM users WHERE username = ?",
+                (reset_username.strip().lower(),)
+            ).fetchone()
+
+            if not reset_user or not verify_hash(reset_pin, reset_user[0]):
+                st.error("Incorrect username or PIN.")
+            elif len(new_password) < 8:
+                st.error("Password must have at least 8 characters.")
+            elif new_password != confirm_password:
+                st.error("Passwords do not match.")
+            else:
+                conn.execute(
+                    "UPDATE users SET password_hash = ? WHERE username = ?",
+                    (make_hash(new_password), reset_username.strip().lower())
+                )
+                conn.commit()
+                st.success("Password reset successfully. Please log in.")
 
     st.stop()
 
@@ -382,10 +410,45 @@ if menu == "Dashboard":
     st.subheader("Recent Transactions")
 
     if not df.empty:
-        st.dataframe(
-            df.tail(10),
-            use_container_width=True
+    st.dataframe(
+        df.tail(10),
+        use_container_width=True
+    )
+
+    st.subheader("Delete a Transaction")
+
+    transaction_to_delete = st.selectbox(
+        "Select transaction to delete",
+        options=transactions,
+        format_func=lambda x: f"{x[0]} | {x[1]} | {x[2]} | ${x[3]:,.2f}"
+    )
+
+    if st.button("Delete Selected Transaction"):
+        conn.execute(
+            """DELETE FROM transactions
+            WHERE date = ?
+            AND type = ?
+            AND description = ?
+            AND amount = ?
+            AND username = ?""",
+            (
+                transaction_to_delete[0],
+                transaction_to_delete[1],
+                transaction_to_delete[2],
+                transaction_to_delete[3],
+                st.session_state.username
+            )
         )
+
+        conn.commit()
+
+        record_audit(
+            "Transaction Deleted",
+            "A transaction was deleted."
+        )
+
+        st.success("Transaction deleted successfully!")
+        st.rerun()
     else:
         st.info("No transactions recorded yet.")
 
