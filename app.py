@@ -409,11 +409,13 @@ if menu == "Dashboard":
     # RECENT TRANSACTIONS
     st.subheader("Recent Transactions")
 
+elif menu == "Dashboard":
+
     if not df.empty:
-    st.dataframe(
-        df.tail(10),
-        use_container_width=True
-    )
+        st.dataframe(
+            df.tail(10),
+            use_container_width=True
+        )
 
     st.subheader("Delete a Transaction")
 
