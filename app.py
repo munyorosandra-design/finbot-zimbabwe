@@ -164,6 +164,123 @@ st.sidebar.write("SME Financial Management Assistant")
 
 menu = st.sidebar.radio("Navigation", ["Dashboard", "Record Transactions", "Sales & Expenses", "Cash Flow", "Customer Debts", "Ask FinBot AI", "Reports", "Audit Log"])
 
+# USER REGISTRATION AND LOGIN
+
+import hashlib
+import hmac
+import secrets
+
+conn.execute("""
+CREATE TABLE IF NOT EXISTS users (
+    username TEXT PRIMARY KEY,
+    business_name TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
+    pin_hash TEXT NOT NULL,
+    created_at TEXT
+)
+""")
+conn.commit()
+
+
+def hash_credential(value, salt):
+    return hashlib.pbkdf2_hmac(
+        "sha256",
+        value.encode(),
+        salt,
+        200000
+    ).hex()
+
+
+def make_hash(value):
+    salt = secrets.token_bytes(16)
+    hashed = hash_credential(value, salt)
+    return salt.hex() + ":" + hashed
+
+
+def verify_hash(value, stored):
+    try:
+        salt_hex, saved_hash = stored.split(":")
+        salt = bytes.fromhex(salt_hex)
+        calculated = hash_credential(value, salt)
+        return hmac.compare_digest(calculated, saved_hash)
+    except (ValueError, TypeError):
+        return False
+
+
+if not st.session_state.authenticated:
+
+    st.title("FinBot Zimbabwe")
+    st.subheader("SME Account Access")
+
+    login_tab, register_tab = st.tabs(["Login", "Register"])
+
+    with register_tab:
+        st.subheader("Register Your Business")
+
+        business_name = st.text_input("Business Name")
+        new_username = st.text_input("Choose Username")
+        new_password = st.text_input("Choose Password", type="password")
+        new_pin = st.text_input("Choose 6-digit PIN", type="password")
+
+        if st.button("Create Account"):
+            if not business_name or not new_username or not new_password or not new_pin:
+                st.error("Please complete all fields.")
+            elif len(new_pin) != 6 or not new_pin.isdigit():
+                st.error("PIN must contain exactly 6 digits.")
+            elif len(new_password) < 8:
+                st.error("Password must contain at least 8 characters.")
+            else:
+                try:
+                    conn.execute(
+                        """INSERT INTO users
+                        (username, business_name, password_hash, pin_hash, created_at)
+                        VALUES (?, ?, ?, ?, ?)""",
+                        (
+                            new_username.strip().lower(),
+                            business_name.strip(),
+                            make_hash(new_password),
+                            make_hash(new_pin),
+                            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        )
+                    )
+                    conn.commit()
+                    st.success("Account created. Please log in.")
+                except sqlite3.IntegrityError:
+                    st.error("That username is already registered.")
+
+    with login_tab:
+        st.subheader("Login to FinBot")
+
+        login_username = st.text_input("Username", key="login_username")
+        login_password = st.text_input("Password", type="password", key="login_password")
+        login_pin = st.text_input("6-digit PIN", type="password", key="login_pin")
+
+        if st.button("Login"):
+            if st.session_state.login_attempts >= 5:
+                st.error("Too many attempts. Please restart the app and try again.")
+            else:
+                user = conn.execute(
+                    """SELECT username, password_hash, pin_hash
+                    FROM users WHERE username = ?""",
+                    (login_username.strip().lower(),)
+                ).fetchone()
+
+                if (
+                    user
+                    and verify_hash(login_password, user[1])
+                    and verify_hash(login_pin, user[2])
+                ):
+                    st.session_state.authenticated = True
+                    st.session_state.username = user[0]
+                    st.session_state.login_attempts = 0
+                    st.rerun()
+                else:
+                    st.session_state.login_attempts += 1
+                    st.error("Incorrect username, password or PIN.")
+
+    st.stop()
+
+
 # DASHBOARD
 st.title("💰 FinBot Zimbabwe")
 st.caption("Your SME Financial Management and Decision Support Assistant")
