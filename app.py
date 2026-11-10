@@ -135,7 +135,14 @@ if "debts" not in st.session_state:
         for row in saved_debts
     ]
 
-transactions = st.session_state.transactions
+transactions = conn.execute(
+    """SELECT date, type, description, amount
+    FROM transactions
+    WHERE username = ?
+    ORDER BY date DESC""",
+    (st.session_state.username,)
+).fetchall()
+
 debts = st.session_state.debts
 
 df = pd.DataFrame(
