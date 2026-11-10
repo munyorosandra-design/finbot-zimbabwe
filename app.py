@@ -491,12 +491,15 @@ elif menu == "Cash Flow":
     st.header("Business Cash Flow Management")
 
     # LOAD TRANSACTIONS DIRECTLY FROM DATABASE
+
     cash_records = conn.execute(
         """SELECT date, type, description, amount
         FROM transactions
-        WHERE type IN (
+        WHERE username = ?
+        AND type IN (
             'Sale', 'Expense', 'Customer Payment', 'Supplier Payment'
-        )"""
+        )""",
+        (st.session_state.username,)
     ).fetchall()
 
     cash_df = pd.DataFrame(
