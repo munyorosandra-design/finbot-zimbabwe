@@ -274,6 +274,10 @@ elif menu == "Record Transactions":
                 )
 
                 conn.commit()
+                record_audit(
+                    "Transaction Recorded",
+                     "A new transaction was successfully saved."
+                )
 
                 st.success("Transaction recorded successfully!")
                 st.rerun()
