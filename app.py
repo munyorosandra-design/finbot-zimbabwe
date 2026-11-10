@@ -722,9 +722,7 @@ elif menu == "Reports":
 st.sidebar.divider()
 st.sidebar.caption("FinBot Zimbabwe | Academic Prototype")
 # AUDIT LOG PAGE
-
 elif menu == "Audit Log":
-
     st.header("System Audit Log")
     st.caption("Record of activities performed in FinBot Zimbabwe")
 
@@ -732,7 +730,10 @@ elif menu == "Audit Log":
 
         audit_data = pd.read_csv("audit_log.csv")
 
-        st.dataframe(audit_data, use_container_width=True)
+        st.dataframe(
+            audit_data,
+            use_container_width=True
+        )
 
         st.download_button(
             label="Download Audit Log",
