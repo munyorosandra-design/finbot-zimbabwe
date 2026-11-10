@@ -431,12 +431,19 @@ elif menu == "Record Transactions":
             else:
                 conn.execute(
                     """INSERT INTO transactions
-                    (date, type, description, amount)
-                    VALUES (?, ?, ?, ?)""",
-                    (str(transaction_date), transaction_type, description, amount)
+                    (date, type, description, amount, username)
+                    VALUES (?, ?, ?, ?, ?)""",
+                    (
+                        str(transaction_date),
+                        transaction_type,
+                        description,
+                        amount,
+                        st.session_state.username
+                    )
                 )
 
                 conn.commit()
+
                 record_audit(
                     "Transaction Recorded",
                     "A new transaction was successfully saved."
