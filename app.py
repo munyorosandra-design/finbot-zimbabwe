@@ -171,6 +171,11 @@ st.sidebar.write("SME Financial Management Assistant")
 
 menu = st.sidebar.radio("Navigation", ["Dashboard", "Record Transactions", "Sales & Expenses", "Cash Flow", "Customer Debts", "Ask FinBot AI", "Reports", "Audit Log"])
 
+if st.sidebar.button("Logout"):
+    st.session_state.authenticated = False
+    st.session_state.username = None
+    st.session_state.login_attempts = 0
+    st.rerun()
 # USER REGISTRATION AND LOGIN
 
 import hashlib
