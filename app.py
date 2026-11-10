@@ -61,6 +61,19 @@ CREATE TABLE IF NOT EXISTS transactions (
     amount REAL
 )
 """)
+# ADD USER IDENTIFIER TO EXISTING TRANSACTIONS
+
+columns = [
+    row[1] for row in conn.execute(
+        "PRAGMA table_info(transactions)"
+    ).fetchall()
+]
+
+if "username" not in columns:
+    conn.execute(
+        "ALTER TABLE transactions ADD COLUMN username TEXT"
+    )
+    conn.commit()
 
 conn.execute("""
 CREATE TABLE IF NOT EXISTS debts (
